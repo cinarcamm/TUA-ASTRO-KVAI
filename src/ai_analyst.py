@@ -73,10 +73,8 @@ class AIAnalyst:
 
         low_var_windows = std <= self.std_threshold  # pencere bazlı
 
-        # Pencere tespitini örnek bazlı maskeye yay
         stuck_mask = np.zeros(n, dtype=bool)
-        # Bu döngü pratikte hızlıdır; her pencere en fazla w eleman işaretler.
-        # window_size sabit olduğunda toplam maliyet O(N) olur.
+
         idxs = np.where(low_var_windows)[0]
         for i in idxs:
             stuck_mask[i : i + w] = True

@@ -13,7 +13,7 @@ except ImportError:
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
-# GOOGLE SİLİNDİ, YERİNE OLLAMA GELDİ!
+
 from langchain_community.chat_models import ChatOllama
 from langchain_core.messages import HumanMessage
 
@@ -31,7 +31,7 @@ class RAGEngine:
         docs_dir: str = os.path.join(os.path.dirname(__file__), "..", "docs"),
         persist_dir: str = ".chroma_rag",
         embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2",
-        llm_model: str = "qwen3.5:4b", # SENİN SEÇTİĞİN EFSANE MODEL
+        llm_model: str = "gemini-1.5-pro", 
         chunk_size: int = 800,
         chunk_overlap: int = 100,
     ) -> None:
@@ -41,7 +41,6 @@ class RAGEngine:
         self.llm_model = llm_model
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-
         self._vectorstore: Optional[Chroma] = None
         self._indexed: bool = False
 

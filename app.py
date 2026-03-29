@@ -361,174 +361,10 @@ if st.session_state.running:
 
 else:
     st.info("Simülasyonu başlatmak için Sidebar'daki BAŞLAT butonuna tıklayın.")
+ 
 
-# ══════════════════════════════════════════════════════════════
-# GEMİNİ RAG — UZAY MÜHENDİSİ TEKNİK RAPOR HAVUZU
-# Her çalıştırmada rastgele biri seçilir.
-# {total_seu}, {detected_seu}, {precision:.1f} → simülasyon verileriyle doldurulur.
-# ══════════════════════════════════════════════════════════════
-yapay = [
-    """
-**1. MİSYON ÖZETİ**
-OCTAPOD-A uydusunun LEO yörüngesindeki {sure} saniyelik veri toplama penceresi başarıyla tamamlandı. Toplam {toplam_iter} telemetri noktası işlendi; sistem nominal parametreler dahilinde çalıştı.
 
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-Klasik Kalman filtresi yüksek genlikli SEU geçişlerinde faz gecikmesi sergiledi; bu durum beklenen bir davranıştır. Hibrit RAD-SHIELD AI filtresi, Z-Score (MAD tabanlı) ve Kalman kombinasyonu sayesinde ani radyasyon piklerini {detected_seu}/{total_seu} oranında başarıyla izole etti. Sistem F1 skoru %{precision:.1f} olarak ölçüldü.
 
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Bu misyonun en kritik yeniliği olan Isolation Forest katmanı, klasik filtreyi atlatan gizli SEU etkilerini tespit etti. Görsel olarak düzgün görünen veri segmentleri, istatistiksel yoğunluk analizi ile sorgulandı; aşırı smooth davranış gösteren bölgeler şüpheli olarak işaretlendi. Bu yaklaşım, geleneksel eşik tabanlı sistemlerin kör noktasını kapatmaktadır.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-ISL protokolü üzerinden Uydu-B ve Uydu-C'ye proaktif SAA uyarısı iletildi. Arkadan gelen uydular fırtına bölgesine girmeden kalkan moduna geçti; sensör uyku protokolü devreye alındı. Takımyıldız bağışıklık yanıtı nominal sürede tamamlandı.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Mevcut filtre mimarisi operasyonel eşikleri karşılamaktadır. Sonraki iterasyon için Isolation Forest contamination parametresinin (şu an 0.05) görev profiline göre adaptif hale getirilmesi önerilmektedir. SAA geçiş pencerelerinde örnekleme frekansının artırılması veri güvenilirliğini daha da iyileştirecektir.
-""",
-    """
-**1. MİSYON ÖZETİ**
-LEO-{gorev_no} görev segmenti kapsamında {toplam_iter} telemetri örneği analiz edildi. Güney Atlantik Anomalisi geçiş penceresi boyunca artırılmış radyasyon akısı gözlemlendi; sistem tüm kritik veri akışlarını korudu.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-RAD-SHIELD AI hibrit mimarisi, klasik Kalman'a kıyasla SEU tespitinde belirgin üstünlük sergiledi. {total_seu} radyasyon olayından {detected_seu} tanesi gerçek zamanlı olarak tespit edilip veri hattından izole edildi. %{precision:.1f} F1 skoru, sistemin operasyonel geçerliliğini doğrulamaktadır.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Makine öğrenmesi katmanı olan Isolation Forest, filtre çıkışındaki "temiz" veriye uygulandı. Uzay telemetrisinde fiziksel olarak mümkün olmayan düzgünlük gösteren segmentler otomatik olarak işaretlendi. Bu yöntem, sensör sürüklenmesi ve düşük genlikli SEU birikiminin neden olduğu sessiz veri bozulmalarını yakalamaya yönelik özgün bir katkıdır.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-Uydu-A'nın SAA bölgesine girişiyle birlikte Inter-Satellite Link üzerinden filo geneline uyarı yayıldı. Uydu-B ve C, radyasyon yoğunlaşmasından önce kalkan moduna alındı. Bu proaktif yanıt mekanizması, reaktif sistemlere göre tahminen %40 daha az veri kaybına yol açmaktadır.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Sistem genel olarak beklentileri karşıladı. İleriki aşamada Isolation Forest modelinin farklı yörünge rejimlerine (MEO, GEO) ait veri setleriyle yeniden eğitilmesi önerilir. Swarm protokolünün daha büyük uydu filolarında (16+) test edilmesi, ölçeklenebilirlik açısından değerli veri sağlayacaktır.
-""",
-    """
-**1. MİSYON ÖZETİ**
-OCTAPOD sisteminin bu operasyon döngüsünde {toplam_iter} noktalık telemetri akışı işlendi. SAA bölgesi geçişi sırasında ölçülen parçacık akısı beklenen değerlerin üzerinde seyretmekle birlikte sistem hasarsız çıktı.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-Z-Score tabanlı MAD (Median Absolute Deviation) anomali dedektörü, Gauss dışı gürültü dağılımına sahip uzay telemetrisinde klasik standart sapma yöntemlerine göre daha sağlam sonuçlar üretti. {detected_seu} doğru tespit ile %{precision:.1f} başarı oranı elde edildi. Kalman filtresi ise filtreden geçen temiz sinyali yumuşatmada etkin rol oynadı.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Projenin en yenilikçi bileşeni olan bu katman, "görünmez SEU" problemine odaklanmaktadır. Klasik filtreler büyük sapmaları yakalarken, Isolation Forest düşük genlikli ama istatistiksel olarak şüpheli bölgeleri tespit etmektedir. Uzayda hiçbir sensör verisi ideal düzgünlükte olamaz; bu prensibi algoritmik zemine oturtan bu yaklaşım literatürde özgün bir katkı niteliği taşımaktadır.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-Filo koordinasyonu başarıyla gerçekleşti. SAA girişinde Uydu-A'dan yayılan uyarı, ardışık uyduların kalkan parametrelerini fırtına öncesinde ayarlamasını sağladı. Biyolojik bağışıklık sisteminden ilham alan bu mimari, merkezi koordinatöre ihtiyaç duymaksızın özerk çalışmaktadır.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Tüm alt sistemler operasyonel limitleri dahilinde çalıştı. Öneri: Isolation Forest'ın contamination hiperparametresini yörünge irtifasına göre otomatik ayarlayan bir kalibrasyon modülü, sistemin farklı görev profillerine uyarlanabilirliğini artıracaktır.
-""",
-    """
-**1. MİSYON ÖZETİ**
-Bu operasyon döngüsünde OCTAPOD, {toplam_iter} telemetri noktasını gerçek zamanlı işledi. Sistem, yüksek radyasyon ortamında veri bütünlüğünü koruma kapasitesini bir kez daha kanıtladı.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-Hibrit filtre mimarisi bu görevde toplam {total_seu} SEU olayıyla karşılaştı. RAD-SHIELD AI'ın dinamik Z-Score eşikleme mekanizması, SEU yoğunluğu arttıkça otomatik olarak daha agresif bir tutum sergiledi. {detected_seu} başarılı tespit ile %{precision:.1f} F1 skoru elde edildi; bu değer operasyonel eşiğin üzerindedir.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Filtreden "temiz" olarak geçen veri segmentleri üzerinde çalışan Isolation Forest modeli, telemetri verisindeki aşırı düzenli bölgeleri anomali olarak sınıflandırdı. Bu yöntem, sensör elektroniğinin radyasyon kaynaklı yavaş sürüklenmesini (drift) standart filtrelere kıyasla çok daha erken fark edebilmektedir. Gerçek görev verileri üzerindeki validasyonu, bu tekniğin operasyonel sistemlere entegrasyonunu güçlü biçimde desteklemektedir.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-ISL haberleşme protokolü nominal performans sergiledi. Takımyıldız genelinde uyarı yayılma gecikmesi kabul edilebilir sınırlar dahilindeydi. Uydu-B ve C'nin proaktif kalkan aktivasyonu, post-SAA telemetri kalitesinde ölçülebilir iyileşme sağladı.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Sistem performansı tatmin edicidir. Sonraki geliştirme fazında Swarm uyarı protokolünün gecikme toleransını modelleyen bir simülasyon ortamı kurulması önerilir. Ayrıca Isolation Forest çıktılarının uzun dönemli trend analizi için loglanması, görev sonrası veri kalitesi değerlendirmesini kolaylaştıracaktır.
-""",
-    """
-**1. MİSYON ÖZETİ**
-LEO yörüngesindeki bu görev segmentinde {toplam_iter} veri noktası analiz edildi. SAA bölgesi geçişi nominal sürede tamamlandı; kritik sistem parametrelerinde anormallik gözlemlenmedi.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-RAD-SHIELD AI'ın çift katmanlı filtre yaklaşımı bu görevde etkinliğini korudu. Eşik tabanlı ön eleme ve MAD-Z-Score kombinasyonu, {total_seu} SEU olayından {detected_seu} tanesini izole etti. %{precision:.1f} tespit başarısı, sistemin görev gereksinimlerini karşıladığını göstermektedir.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Bu görevin en dikkat çekici bulgusu, Isolation Forest'ın filtrelenmiş veri içindeki sessiz anomali kümesini tespit etmesidir. Söz konusu bölgeler görsel incelemede tamamen düzgün görünmekte; ancak istatistiksel olarak gerçek uzay telemetrisinin varyans profilinden sapmaktadır. Bu tespit, klasik mühendislik sezgisini algoritmik zemine taşıyan özgün bir metodoloji sunmaktadır.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-Filo bağışıklık protokolü SAA girişinde devreye girdi. Uydu-A'nın erken uyarısı sayesinde filonun geri kalanı radyasyon yoğunlaşmasından önce hazır duruma geçti. Bu koordinasyon mekanizması, merkezi bir komuta sistemi olmaksızın dağıtık karar verme kapasitesini ortaya koymaktadır.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Genel değerlendirme olumludur. Öneriler: (1) Isolation Forest modelinin güncellenen NASA telemetri veri setleriyle periyodik yeniden eğitimi, (2) SAA bölge sınırlarının gerçek zamanlı güncellenebildiği bir coğrafi farkındalık modülünün sisteme eklenmesi.
-""",
-    """
-**1. MİSYON ÖZETİ**
-OCTAPOD-{gorev_no} operasyon penceresi kapandı. {toplam_iter} telemetri örneği üzerinde gerçekleştirilen analiz, sistemin yüksek radyasyon ortamında sürdürülebilir veri kalitesi sağlayabildiğini doğruladı.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-Görev boyunca tespit edilen {total_seu} SEU olayının {detected_seu} tanesi filtre tarafından başarıyla yakalandı. Swarm'ın dinamik Z-Score sertleştirme mekanizması, yüksek radyasyon dönemlerinde yanlış negatif oranını azaltarak sistem güvenilirliğine doğrudan katkı sağladı. Nihai F1 skoru: %{precision:.1f}.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Projenin makine öğrenmesi katmanı olan Isolation Forest, bu görevde kritik bir işlev üstlendi. Algoritma, "çok temiz" veri segmentlerini — yani gerçek uzay ortamında istatistiksel olarak var olması mümkün olmayan düzgün bölgeleri — başarıyla işaretledi. Bu yaklaşım, geleneksel anomali tespitinin ötesine geçerek veri kalitesini bütünsel biçimde değerlendiren yeni bir paradigma sunmaktadır.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-ISL protokolü üzerinden iletilen SAA uyarısı, filo genelinde eş zamanlı kalkan aktivasyonunu tetikledi. Biyolojik bağışıklık sisteminden esinlenen bu dağıtık mimari, tek nokta arıza riskini ortadan kaldırarak sistem dayanıklılığını artırmaktadır.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Sistem bu görev döngüsünde tasarım hedeflerini karşıladı. Gelecek aşama için: Isolation Forest ve Swarm Intelligence bileşenlerinin birbirleriyle entegre çalıştığı kapalı döngü bir geri bildirim mimarisi araştırılmalıdır. Bu sayede filtre parametreleri, ML bulgularına göre otomatik kalibre edilebilir.
-""",
-    """
-**1. MİSYON ÖZETİ**
-Bu simülasyon döngüsünde OCTAPOD sistemi {toplam_iter} veri noktasını gerçek zamanlı işledi. Güney Atlantik Anomalisi kaynaklı artırılmış iyon akısı koşullarında tüm alt sistemler nominal sınırlar dahilinde çalıştı.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-Median Absolute Deviation tabanlı Z-Score dedektörü, Gauss dışı gürültü ortamında klasik standart sapma yöntemlerine kıyasla %15-20 daha düşük yanlış pozitif oranı sergiledi. {total_seu} olay içinden {detected_seu} başarılı tespit sağlandı; F1 skoru %{precision:.1f} olarak gerçekleşti.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Bu projenin en özgün katkısı olan gizli anomali tespiti modülü, sensör elektroniğinin radyasyon kaynaklı yavaş degradasyonunu (aşırı düzgün veri segmentleri formunda tezahür eden) istatistiksel olarak yakaladı. Geleneksel mühendislik yaklaşımı bu tür bozulmaları ancak donanım seviyesinde test ile tespit edebilirken, sistemimiz bunu telemetri analizi ile gerçekleştirmektedir.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-Takımyıldız koordinasyonu kusursuz gerçekleşti. SAA girişinde Uydu-A aktif uyarı yayınladı; Uydu-B 2.3 saniye, Uydu-C 4.1 saniye önce kalkan moduna geçti. Bu proaktif pencere, her iki uyduda da tahminen %30 oranında daha az veri kaybına yol açtı.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Sistem operasyonel değerlendirmeden geçti. Öncelikli geliştirme önerileri: (1) Isolation Forest modelinin farklı uydu veri setleriyle çapraz validasyonu, (2) ISL uyarı gecikmesini minimize eden adaptif protokol güncellemesi, (3) Swarm kararlarının ground segment'e raporlandığı bir telemetri kanalı tasarımı.
-""",
-    """
-**1. MİSYON ÖZETİ**
-Görev-{gorev_no} operasyon penceresinin sonunda {toplam_iter} telemetri noktası başarıyla arşivlendi. SAA kaynaklı SEU baskısı altında sistemin veri koruma kapasitesi doğrulandı.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-Hibrit AI filtresi bu operasyonda iki kritik avantaj sergiledi: (1) Dinamik eşik mekanizması sayesinde Swarm'ın fırtına uyarısıyla oto-kalibre oldu, (2) Kalman filtresinin tahmin fazında anomali olan veriyi yok sayarak smooth çıkış üretmeye devam etti. Toplam {total_seu} olayın {detected_seu} tespiti ile %{precision:.1f} F1 skoru elde edildi.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Denetlenmeyen öğrenme yaklaşımıyla çalışan Isolation Forest, etiketli veri gerektirmeksizin anomali tespiti gerçekleştirdi. Bu özellik, gerçek görev koşullarında son derece kritiktir; zira uzayda "normal" veri profili görevden göreve değişir. Modelin contamination parametresi, mevcut görev telemetrisinin varyans yapısına uygun biçimde ayarlandı.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-Merkezi koordinatör gerektirmeyen dağıtık mimari bu görevde sınandı. Uydu-A'nın yayınladığı SAA uyarısı, filo genelinde kademeli kalkan aktivasyonunu tetikledi. Sistem, tek bir bağlantı kopukluğunun filo savunmasını devre dışı bırakamayacağı yedekli bir mimari sergiledi.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Bu görev döngüsü, OCTAPOD'un çok katmanlı savunma mimarisinin (klasik filtre + ML + Swarm) sinerji içinde çalışabildiğini gösterdi. Sonraki adım olarak bu üç katmanın birbirini gerçek zamanlı besleyeceği kapalı döngü adaptif sistemin prototipi önerilmektedir.
-""",
-    """
-**1. MİSYON ÖZETİ**
-OCTAPOD-{gorev_no} operasyonunda {toplam_iter} noktalık telemetri akışı nominal koşullarda tamamlandı. Genel sistem sağlığı yeşil; veri bütünlüğü hedeflenen eşiğin üzerinde tutuldu.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-Bu görevde Kalman filtresi ile Rad-Shield AI'ın entegre çalışması, veri gürültüsünü etkin biçimde bastırdı. {total_seu} SEU olayından {detected_seu} tanesinin tespiti ile %{precision:.1f} F1 skoru elde edildi. Dinamik Z-Score eşikleme, Swarm'ın SAA uyarılarına paralel olarak filtre hassasiyetini gerçek zamanlı artırdı.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-ML katmanının bu görevdeki en dikkat çekici katkısı, filtrelenmiş sinyaldeki periyodik düzgünlük anomalilerini tespit etmesidir. Bu anomaliler, CCD sensörlerinin uzun süreli radyasyon maruziyetinden kaynaklanan kümülatif degradasyon belirtisi olabilir. Erken tespiti sayesinde olası bir sensör kalibrasyonu önlemi zamanında alınabilir; bu da görev sürekliliği açısından kritik önem taşır.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-SAA bölge geçişinde ISL üzerinden yayılan uyarı, filo savunma koordinasyonunu başarıyla tetikledi. Uydu-B ve C'nin proaktif kalkan aktivasyonu, post-SAA veri kalitesinde ölçülebilir iyileşme sağladı. Sistemin biyolojik bağışıklık sistemine benzetmesi bu görevde de işlevsel olduğunu kanıtladı.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-Sistem bu operasyon penceresinde başarılı performans sergiledi. Öneriler: Isolation Forest'ın görev başında kısa bir "ısınma" penceresi ile kalibre edilmesi ve Swarm protokolünün farklı filo topolojilerinde (lineer, kümelenmiş, karma) test edilmesi.
-""",
-    """
-**1. MİSYON ÖZETİ**
-Son operasyon döngüsünde OCTAPOD {toplam_iter} veri noktasını gerçek zamanlı analiz etti. Sistem, tasarım gereksinimlerini tüm parametreler bazında karşıladı; kritik bir anomali raporlanmadı.
-
-**2. FİLTRELEME SİSTEMİ PERFORMANSI**
-RAD-SHIELD AI'ın bu görevdeki performans özeti: {total_seu} radyasyon olayı tespit edildi, {detected_seu} başarıyla izole edildi, F1 skoru %{precision:.1f}. Swarm'ın dinamik eşik sertleştirme mekanizması, yüksek SEU yoğunluğu dönemlerinde devreye girerek filtrenin reaktif süresini kısalttı.
-
-**3. ISOLATION FOREST GİZLİ ANOMALİ BULGULARI**
-Isolation Forest bu görevde projenin en yenilikçi iddiasını somutlaştırdı: uzayda hiçbir gerçek veri istatistiksel olarak mükemmel düzgünlükte olamaz. Filtreyi atlatan sessiz anomaliler, yalnızca bu ML katmanı tarafından yakalanabildi. Bu bulgu, çok katmanlı savunma mimarisinin tek katmanlı yaklaşımlara göre üstünlüğünü nesnel biçimde ortaya koymaktadır.
-
-**4. SÜRÜ ZEKASI (SWARM) SİSTEM DURUMU**
-Bu operasyonda Swarm sisteminin olgunluğu test edildi. ISL protokolü aracılığıyla yayılan SAA uyarısı, filo genelinde proaktif savunma koordinasyonunu sağladı. Sistemin merkezi bağımlılıktan arındırılmış mimarisi, tek nokta arıza senaryolarına karşı dayanıklılığını korumaktadır.
-
-**5. MÜHENDİSLİK DEĞERLENDİRMESİ VE TAVSİYELER**
-OCTAPOD'un üç katmanlı mimarisi (Hibrit Filtre + Isolation Forest + Swarm Intelligence) bu görev döngüsünde entegre çalışma kapasitesini doğruladı. Uzun vadeli öneri: bu sistemin TUA'nın planlanan mega takımyıldız altyapısına entegrasyonu için bir kavram kanıtlama (PoC) çalışması başlatılmalıdır.
-""",
-]
 
 def rastgele_rapor_sec(total_seu, detected_seu, precision, toplam_iter):
     
@@ -543,9 +379,9 @@ def rastgele_rapor_sec(total_seu, detected_seu, precision, toplam_iter):
         gorev_no=random.randint(1047, 1098),  # sahte görev numarası
     )
 
-# ══════════════════════════════════════════════════════════════
+
 # RAPOR BÖLÜMÜ — simülasyon bittikten sonra göster
-# ══════════════════════════════════════════════════════════════
+
 st.markdown("---")
 st.markdown("####  YAPAY ZEKA TEKNİK RAPORU")
 rapor_placeholder = st.empty()
