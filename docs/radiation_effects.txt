@@ -1,0 +1,113 @@
+================================================================================
+DÖKÜMAN: radiation_effects.txt
+TÜR: RAG Bilgi Kaynağı — Teknik Operasyon Notu (Logbook)
+HAZIRLAYAN: Yer İstasyonu Operasyon Sorumlusu
+VERSİYON: 1.0
+================================================================================
+[RAG-SOURCE: radiation-effects-operational-rules]
+[RAG-TAGS: SEU, TID, SAA, isolation-forest, anomaly-detection, SOP, telemetry]
+================================================================================
+
+--- BÖLÜM 1: KRİTİK EŞİKLER ---
+
+KURAL-01 [Isolation Forest — SEU Eşiği]
+  - Koşul  : Isolation Forest anomali skoru < -0.7
+  - Eylem  : Veri noktası SEU (Single Event Upset) kaynaklı anomali olarak etiketle.
+  - Not    : Skor -0.7 ile 0.0 arasındaysa "Şüpheli" olarak logla; müdahale tetiklenme.
+
+KURAL-02 [Z-Skoru — Kritik Anomali Sınıfı]
+  - Koşul  : Modifiye Z-skoru (MAD tabanlı) > 3.5
+  - Eylem  : Veri noktasını "Kritik Anomali" olarak sınıflandır ve anomali günlüğüne kaydet.
+  - Not    : 2.5 < Z < 3.5 arası "Uyarı" seviyesidir; loglama yapılır, müdahale beklenir.
+
+KURAL-03 [Çift Kriter Zorunluluğu]
+  - Koşul  : KURAL-01 VE KURAL-02 aynı anda tetiklenirse
+  - Eylem  : Anomali "Yüksek Güven SEU" olarak sınıflandırılır.
+             DATA_REPAIR_SPLINE protokolü DERHAL tetiklenir (bekleme yok).
+
+--- BÖLÜM 2: DONMA (STUCK-AT) KURALI ---
+
+KURAL-04 [Sensör Kilitleme Tespiti — TID Etkisi]
+  - Koşul  : Herhangi bir telemetri kanalında ardışık 30 veya daha fazla örnekte
+             varyans = 0 (tüm değerler aynı dijital sözcük)
+  - Eylem  : Kanal "SENSOR_LOCKED" bayrağı ile işaretle.
+             Arıza türü = "Stuck-at Fault — TID Kaynaklı" olarak raporla.
+             SYS_RECOV_01 protokolünü tetikle (bkz. Bölüm 4).
+  - Önemli : 29 ardışık özdeş örnek eşik sayılmaz; kural tam 30'da aktive olur.
+
+KURAL-05 [Stuck-at ile SEU Ayrımı]
+  - SEU   → Tek veya birkaç noktada spike; bir sonraki örnekte sinyal döner.
+  - Stuck → 30+ ardışık özdeş değer; sinyal dönmez, varyans sıfır kalır.
+  - Kural : Süre < 30 örnek ise SEU prosedürü (KURAL-03) uygulanır.
+            Süre >= 30 örnek ise Stuck-at prosedürü (KURAL-04) uygulanır.
+
+--- BÖLÜM 3: SAA BÖLGESİ AKSİYONU ---
+
+KURAL-06 [SAA Geçiş Modu — Aktif Koşul]
+  - Koşul  : Uydu konumu Güney Atlantik Anomalisi (SAA) sınırları içindeyken
+             (yaklaşık 0°–50°G enlem, 90°B–20°D boylam)
+  - Eylem  : SAA_MODE = ACTIVE olarak ayarla.
+
+KURAL-07 [SAA — SEU Raporlama Kuralı]
+  - Koşul  : SAA_MODE = ACTIVE iken SEU anomalisi tespit edilirse
+  - Eylem  : Anomaliyi "Beklenen Radyasyon Etkisi (SAA Geçişi)" olarak sınıflandır.
+             Olay günlüğüne kaydedilir; ancak KRITIK_ALARM tetiklenmez.
+  - Not    : SAA içindeki SEU olayları görev anomalisi sayılmaz,
+             istatistiksel birikim analizi için loglanır.
+
+KURAL-08 [SAA — Filtreleme Hassasiyeti Ayarı]
+  - Koşul  : SAA_MODE = ACTIVE
+  - Eylem  : Tüm anomali tespit eşiklerini %30 gevşet:
+               Isolation Forest eşiği : -0.7  →  -0.91
+               Z-skoru eşiği          :  3.5  →   4.55
+  - Amaç  : SAA bölgesindeki yüksek doğal SEU frekansı nedeniyle
+             yanlış pozitif (false-positive) alarmları bastır.
+  - Not    : Gevşetilmiş eşikler SAA çıkışında otomatik olarak nominal değere döner.
+
+KURAL-09 [SAA — Stuck-at İstisnası]
+  - Koşul  : SAA_MODE = ACTIVE iken KURAL-04 tetiklenirse
+  - Eylem  : Stuck-at kuralı SAA modundan MUAF tutulur.
+             Varyans = 0 tespiti SAA içinde de derhal SYS_RECOV_01 tetikler.
+  - Gerekçe: Sensör kilitleme TID kaynaklıdır; SAA geçişiyle ilişkilendirilmez.
+
+--- BÖLÜM 4: MÜDAHALE KOMUTLARI ---
+
+KURAL-10 [DATA_REPAIR_SPLINE Protokolü]
+  - Tetikleyen Kural : KURAL-03 (SEU tespiti)
+  - Hedef  : SEU kaynaklı bozuk veri noktalarını kurtarmak
+  - Adımlar:
+      1. Bozuk nokta(lar) NaN olarak işaretlenir.
+      2. Kübik Spline (CubicSpline) veya PCHIP enterpolasyonu uygulanır.
+      3. Kalman filtresi tahmin adımı çalıştırılır (Mahalanobis mesafesi
+         eşik aşımında güncelleme atlanır, yalnızca predict kullanılır).
+      4. Düzeltilmiş değer "REPAIRED_SEU" kalite bayrağıyla arşivlenir.
+      5. Orijinal bozuk değer ham günlükte saklanır (silinmez).
+  - Protokol Çıktısı: Temizlenmiş zaman serisi + SEU olay raporu.
+
+KURAL-11 [SYS_RECOV_01 Protokolü]
+  - Tetikleyen Kural : KURAL-04 (Stuck-at / sensör kilitleme tespiti)
+  - Hedef  : Kilitli kanalı devre dışı bırakıp yedek kanalı aktive etmek
+  - Adımlar:
+      1. Etkilenen kanal "INVALID" kalite bayrağıyla işaretlenir.
+      2. Yedek kanal (warm/cold redundancy) aktive edilir.
+      3. Yedek kanal yoksa hesaplamalı yeniden yapılandırma başlatılır.
+      4. Kilitli kanal donma başlangıç zaman damgasıyla arıza günlüğüne eklenir.
+      5. Arıza türü "Stuck-at — TID" olarak raporlanır; FRB süreci başlatılır.
+  - Protokol Çıktısı: Aktif yedek kanal + stuck-at arıza raporu.
+
+--- BÖLÜM 5: KURAL ÖNCELİK HİYERARŞİSİ ---
+
+  ÖNCELİK 1 (En Yüksek): KURAL-04 / KURAL-09 — Stuck-at tespiti
+                          → SYS_RECOV_01 her koşulda tetiklenir.
+  ÖNCELİK 2            : KURAL-03 — Yüksek Güven SEU (çift kriter)
+                          → DATA_REPAIR_SPLINE derhal tetiklenir.
+  ÖNCELİK 3            : KURAL-07 / KURAL-08 — SAA modu aktifken SEU
+                          → Gevşetilmiş eşik, alarm yok, yalnızca loglama.
+  ÖNCELİK 4 (En Düşük) : KURAL-01 veya KURAL-02 (tek kriter) — Şüpheli/Uyarı
+                          → Loglama yapılır, müdahale beklemede.
+
+================================================================================
+SON NOT: Bu döküman RAG sisteminde "kural motoru" kaynağı olarak kullanılmak
+üzere tasarlanmıştır. Her KURAL-XX maddesi bağımsız bir mantık kuralı olarak
+alınabilir ve vektör veritabanında ayrı chunk olarak indekslenebilir.
+================================================================================

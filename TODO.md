@@ -1,0 +1,5 @@
+- [x] docs_dir yolunu OS-bağımsız garantili hale getir
+- [x] index_documents içine verbose debug printleri ekle
+- [x] generate_expert_report except bloğunda detaylı hata mesajı döndür
+- [x] model adlarını istenen değerlere sabitle
+- [x] kritik-yol derleme testi çalıştır (py_compile)
